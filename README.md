@@ -7,7 +7,7 @@ Dependencies:
 * go mysql
 
 ### Getting started
-* create the proper gopath directory: `mkdir -p $GOPATH/src/bitbucket.org/Robawilkinson/`
+* create the proper gopath directory: `mkdir -p $GOPATH/src/github.com/Robawilkinson/`
 * clone this repo in there.
 * open up mysql `$ mysql -uroot`
 * create the database, call it "baseball" `#=: CREATE DATABASE baseball`
