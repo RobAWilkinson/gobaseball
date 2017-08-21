@@ -15,7 +15,7 @@ import "github.com/gin-gonic/gin"
 const HOST = "http://localhost:3000"
 
 func Database() *gorm.DB {
-	db, err := gorm.Open("mysql", "robertwilkinson:@/baseball?charset=utf8&parseTime=True&loc=Local")
+	db, err := gorm.Open("mysql", "robertwilkinson:@/lahman2016?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -23,63 +23,29 @@ func Database() *gorm.DB {
 
 }
 
-type Batting struct {
-	PlayerID  string `gorm:"column:playerID;primary_key"`
-	YearID    string `gorm:"column:yearID;primary_key"`
-	Stint     string `gorm:"column:stint;primary_key"`
-	TeamID    string `gorm:"column:teamID"`
-	LgID      string `gorm:"column:lgID"`
-	G         string `gorm:"column:G"`
-	G_batting string `gorm:"column:G_batting"`
-	AB        string `gorm:"column:AB"`
-	R         string `gorm:"column:R"`
-	Player    Player `gorm:"ForeignKey:playerID"json:"name,omitempty"`
-}
+// func (player *Player) AfterFind(scope *gorm.Scope) {
+// 	fmt.Println("after find")
+// 	// for _, field := range scope.Fields() {
+// 	// 	fmt.Println(field.Field)
+// 	// }
+// 	for _, field := range scope.GetStructFields() {
+// 		if field.DBName == "playerID" {
+// 			fmt.Printf("%+v\n", field)
+// 		}
+// 	}
 
-type Player struct {
-	NameFirst    string    `gorm:"column:nameFirst"`
-	NameLast     string    `gorm:"column:nameLast"`
-	LahmanID     *uint     `gorm:"column:lahmanID",primary_key`
-	PlayerID     string    `gorm:"column:playerID"`
-	ManagerID    string    `gorm:"column:managerID"`
-	HofID        string    `gorm:"column:hofID"`
-	BirthYear    *int      `gorm:"column:birthYear"`
-	BirthMonth   *int      `gorm:"column:birthMonth"`
-	BirthDay     *int      `gorm:"column:birthDay"`
-	BirthCountry string    `gorm:"column:birthCountry"`
-	BirthState   string    `gorm:"column:birthState"`
-	BirthCity    string    `gorm:"column:birthCity"`
-	DeathYear    string    `gorm:"column:deathYear"`
-	DeathMonth   string    `gorm:"column:deathMonth"`
-	DeathDay     string    `gorm:"column:deathDay"`
-	DeathCountry string    `gorm:"column:deathCountry"`
-	DeathState   string    `gorm:"column:deathState"`
-	DeathCity    string    `gorm:"column:deathCity"`
-	NameNote     string    `gorm:"column:nameNote"`
-	NameGiven    string    `gorm:"column:nameGiven"`
-	NameNick     string    `gorm:"column:nameNick"`
-	Weight       *float32  `gorm:"column:weight"`
-	Height       *float32  `gorm:"column:height"`
-	Bats         string    `gorm:"column:bats"`
-	Throws       string    `gorm:"column:throws"`
-	Debut        string    `gorm:"column:debut"`
-	FinalGame    string    `gorm:"column:finalGame"`
-	College      string    `gorm:"column:college"`
-	Lahman40ID   string    `gorm:"column:lahman40ID"`
-	Lahman45ID   string    `gorm:"column:lahman45ID"`
-	RetroID      string    `gorm:"column:retroID"`
-	HoltzID      string    `gorm:"column:holtzID"`
-	BbrefID      string    `gorm:"column:bbrefID"`
-	BattingData  []Batting `gorm:"ForeignKey:playerID"json:"batting_data,omitempty"`
-	URL          string    `gorm:"-"`
-}
+// }
+// func (batting *Batting) AfterFind(scope *gorm.Scope) {
+// 	for _, field := range scope.Fields() {
+// 		fmt.Println(field.Field)
+// 	}
+// 	for _, field := range scope.GetStructFields() {
+// 		if field.DBName == "playerID" {
+// 			fmt.Printf("%+v\n", field)
+// 		}
+// 	}
 
-func (Player) TableName() string {
-	return "master"
-}
-func (Batting) TableName() string {
-	return "Batting"
-}
+// }
 
 func CreateSearchQuery(c *gin.Context) string {
 	err := c.Request.ParseForm()
@@ -118,7 +84,7 @@ func CreateSearchQuery(c *gin.Context) string {
 
 func FindPlayer(c *gin.Context) {
 	db := Database()
-	// var players []Player
+	var players []Player
 	query := CreateSearchQuery(c)
 	fmt.Println(query)
 
@@ -133,68 +99,51 @@ func FindPlayer(c *gin.Context) {
 	// 	fmt.Println(d)
 	// 	fmt.Println(player)
 	// 	batting.Player = player
-	var player Player
-	var batting []Batting
-	db.Debug().First(&player)
-	d := db.Debug().Model(&player).Related(&batting, "playerID")
-	fmt.Println(d)
-	fmt.Println(player)
-	player.BattingData = batting
+	db.Debug().Where(query).Find(&players)
 
-	c.JSON(200, player)
+	c.JSON(200, createUrls(players))
 
 }
 
 func createUrls(players []Player) []Player {
 	for i := range players {
-		players[i].URL = fmt.Sprint(HOST, "/", players[i].LahmanID)
+		players[i].URL = fmt.Sprint(HOST, "/players/", players[i].PlayerID)
 	}
 	return players
 }
 
-// func GetPlayer(c *gin.Context) {
-// 	db := Database()
-// 	fmt.Println(c.Param("id"))
-// 	var (
-// 		nameFirst, nameLast                                string
-// 		games, games_batting, at_bats, runs, hits, doubles int
-// 	)
-// 	batters := make([]gin.H, 0)
-// 	var current_player Player
-// 	//querynameFirst := c.Request.Form["firstname"]
-// 	//querynameLast := c.Request.Form["lastname"]
-// 	queryID := c.Param("id")
-//
-// 	rows, err := db.Raw("select master.nameFirst, master.nameLast, batting.yearID, batting.teamID, batting.lgID, batting.G, batting.G_batting, batting.AB, batting.R, batting.H, batting.2B  from Batting  JOIN master ON master.playerID=batting.playerID WHERE master.lahmanID=?;", queryID).Rows()
-//
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	defer rows.Close()
-// 	for rows.Next() {
-// 		rows.Scan(&current_player.FirstName, &current_player.LastName, &current_player.YearID, &current_player.TeamID, &current_player.LgID, &current_player.Games, &current_player.GamesBatting, &current_player.AtBats, &current_player.Runs, &current_player.Hits, &current_player.Doubles)
-// 		name := gin.H{"firstname": nameFirst, "lastname": nameLast}
-// 		batting := gin.H{"games": games, "games_batting": games_batting, "at_bats": at_bats, "runs": runs, "hits": hits, "doubles": doubles}
-// 		s := gin.H{"batting": batting, "name": name}
-//
-// 		//			player.firstname = nameFirst
-// 		//			player.lastname = nameLast
-// 		//			player.weight = weight
-// 		//			player.height = height
-// 		//			player.year_born = birthYear
-// 		//			output += nameFirst + ", " + nameLast + "Weight: " + strconv.Itoa(weight) + " Height: " + strconv.Itoa(height) + " Born: " + strconv.Itoa(birthYear) + "\n"
-// 		batters = append(batters, s)
-// 	}
-// 	//		c.JSON(200, gin.H{"firstname": player.firstname, "lastname": player.lastname, "weight": player.weight, "height": player.height, "year_born": player.year_born})
-// 	c.JSON(200, batters)
-// }
+func GetPlayer(c *gin.Context) {
+	db := Database()
+	fmt.Println(c.Param("id"))
+	var player Player
+	var batting []Batting
+	//querynameFirst := c.Request.Form["firstname"]
+	//querynameLast := c.Request.Form["lastname"]
+	fmt.Println(db.HasTable(&player))
+	queryID := c.Param("id")
+	fmt.Println(queryID)
+
+	db.Debug().Where("playerID = ?", queryID).Find(&player)
+	db.Debug().Model(&player).Related(&batting, "playerID")
+	player.BattingData = batting
+	hits := 0
+	at_bats := 0
+	for _, battingData := range batting {
+		at_bats = at_bats + battingData.AB
+		hits = hits + battingData.H
+	}
+	avg := float32(hits) / float32(at_bats)
+	player.Average = avg
+
+	c.JSON(200, player)
+}
 func main() {
 	db := Database()
 	db.AutoMigrate(&Player{})
 	db.AutoMigrate(&Batting{})
 
 	r := gin.Default()
-	//	r.GET("/players/:id", GetPlayer)
+	r.GET("/players/:id", GetPlayer)
 	r.GET("/search", FindPlayer)
 	r.Run(":" + os.Getenv("PORT"))
 
