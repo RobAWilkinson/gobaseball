@@ -1,4 +1,4 @@
-package main
+package baseball
 
 type Player struct {
 	PlayerID     string    `gorm:"column:playerID;primary_key"`
@@ -39,5 +39,5 @@ type Player struct {
 }
 
 func (Player) TableName() string {
-	return "master"
+	return "Master"
 }

@@ -1,4 +1,4 @@
-package main
+package baseball
 
 type Batting struct {
 	PlayerID   string `gorm:"column:playerID;primary_key"`
