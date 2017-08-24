@@ -1,18 +1,13 @@
-package main
+package baseball
 
 import "fmt"
 import "github.com/jinzhu/gorm"
-import "github.com/robawilkinson/baseball"
 
 // import "encoding/json"
-import (
-	"google.golang.org/appengine"
-)
 import "os"
 import "strings"
 import "log"
 import _ "github.com/go-sql-driver/mysql"
-import "net/http"
 
 // import "strconv"
 
@@ -98,7 +93,7 @@ func CreateSearchQuery(c *gin.Context) string {
 
 func FindPlayer(c *gin.Context) {
 	db := Database()
-	var players []baseball.Player
+	var players []Player
 	query := CreateSearchQuery(c)
 	fmt.Println(query)
 
@@ -119,7 +114,7 @@ func FindPlayer(c *gin.Context) {
 
 }
 
-func createUrls(players []baseball.Player) []baseball.Player {
+func createUrls(players []Player) []Player {
 
 	HOST := os.Getenv("HTTP_ORIGIN")
 	for i := range players {
@@ -131,8 +126,8 @@ func createUrls(players []baseball.Player) []baseball.Player {
 func GetPlayer(c *gin.Context) {
 	db := Database()
 	fmt.Println(c.Param("id"))
-	var player baseball.Player
-	var batting []baseball.Batting
+	var player Player
+	var batting []Batting
 	//querynameFirst := c.Request.Form["firstname"]
 	//querynameLast := c.Request.Form["lastname"]
 	fmt.Println(db.HasTable(&player))
@@ -160,16 +155,14 @@ func Test(c *gin.Context) {
 	c.String(200, one)
 }
 
-func main() {
+func Router() *gin.Engine {
 	db := Database()
-	db.AutoMigrate(&baseball.Player{})
-	db.AutoMigrate(&baseball.Batting{})
+	db.AutoMigrate(&Player{})
+	db.AutoMigrate(&Batting{})
 
 	r := gin.New()
 	r.GET("/", Test)
 	r.GET("/players/:id", GetPlayer)
 	r.GET("/search", FindPlayer)
-	http.Handle("/", r)
-
-	appengine.Main()
+	return r
 }

@@ -6,9 +6,9 @@ type Player struct {
 	NameLast     string    `gorm:"column:nameLast"`
 	ManagerID    string    `gorm:"column:managerID"`
 	HofID        string    `gorm:"column:hofID"`
-	BirthYear    *int      `gorm:"column:birthYear"`
-	BirthMonth   *int      `gorm:"column:birthMonth"`
-	BirthDay     *int      `gorm:"column:birthDay"`
+	BirthYear    int       `gorm:"column:birthYear"`
+	BirthMonth   int       `gorm:"column:birthMonth"`
+	BirthDay     int       `gorm:"column:birthDay"`
 	BirthCountry string    `gorm:"column:birthCountry"`
 	BirthState   string    `gorm:"column:birthState"`
 	BirthCity    string    `gorm:"column:birthCity"`
@@ -21,8 +21,8 @@ type Player struct {
 	NameNote     string    `gorm:"column:nameNote"`
 	NameGiven    string    `gorm:"column:nameGiven"`
 	NameNick     string    `gorm:"column:nameNick"`
-	Weight       *float32  `gorm:"column:weight"`
-	Height       *float32  `gorm:"column:height"`
+	Weight       float32   `gorm:"column:weight"`
+	Height       float32   `gorm:"column:height"`
 	Bats         string    `gorm:"column:bats"`
 	Throws       string    `gorm:"column:throws"`
 	Debut        string    `gorm:"column:debut"`
